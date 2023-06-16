@@ -29,4 +29,12 @@ public class UserController {
         LoginResponse loginResponse = userService.loginUser(loginDTO);
         return ResponseEntity.ok(loginResponse);
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Object> logoutUser(@RequestBody LoginDTO loginDTO) {
+        userService.logout(loginDTO.getEmail());
+        return ResponseEntity.ok().body("{\"message\": \"Logout Successful\"}");
+    }
+
+
 }

@@ -40,26 +40,40 @@ public class UserImpl implements UserService {
 
     @Override
     public LoginResponse loginUser(LoginDTO loginDTO) {
-        String msg = "";
-        User user1 = userRepo.findByEmail(loginDTO.getEmail());
-        if (user1 != null) {
+        User user = userRepo.findByEmail(loginDTO.getEmail());
+        if (user != null) {
             String password = loginDTO.getPassword();
-            String encodedPassword = user1.getPassword();
-            Boolean isPwdRight = passwordEncoder.matches(password, encodedPassword);
+            String encodedPassword = user.getPassword();
+            boolean isPwdRight = passwordEncoder.matches(password, encodedPassword);
             if (isPwdRight) {
-                Optional<User> employee = userRepo.findOneByEmailAndPassword(loginDTO.getEmail(), encodedPassword);
-                if (employee.isPresent()) {
+                Optional<User> loggedInUser = userRepo.findOneByEmailAndPassword(loginDTO.getEmail(), encodedPassword);
+                if (loggedInUser.isPresent()) {
+                    String name = loggedInUser.get().getUsername();
+                    String email = loggedInUser.get().getEmail();
+
+                    user.setStatus("active"); // Update the status to "active"
+                    userRepo.save(user);
                     return new LoginResponse("Login Success", true);
                 } else {
                     return new LoginResponse("Login Failed", false);
                 }
             } else {
-
-                return new LoginResponse("password Not Match", false);
+                return new LoginResponse("Password does not match", false);
             }
-        }else {
-            return new LoginResponse("Email not exits", false);
+        } else {
+            return new LoginResponse("Email does not exist", false);
         }
+    }
+
+
+    @Override
+    public void logout(String email) {
+        User user = userRepo.findByEmail(email);
+        if (user != null) {
+            user.setStatus("inactive");
+            userRepo.save(user);
+        }
+
     }
 }
 
